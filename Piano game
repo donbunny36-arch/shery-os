@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>SHERY PIANO FIRE FIXED</title>
+<style>
+body{background:#000;color:white;text-align:center;font-family:Arial;margin:0;padding:10px}
+h1{color:#00ffcc;font-size:30px;text-shadow:0 0 15px #00ffcc;margin:5px}
+.box{background:#111;border:2px solid #00ffcc;padding:10px;border-radius:20px;max-width:420px;margin:auto}
+#arena{position:relative;width:100%;height:440px;background:linear-gradient(#000,#1a0033);border:2px solid #00ffcc;border-radius:15px;overflow:hidden;display:flex}
+.lane{flex:1;border-right:1px solid #333;position:relative}
+.tile{position:absolute;left:2px;right:2px;height:110px;background:linear-gradient(#00ffcc,#0088ff);border-radius:10px;text-align:center;line-height:110px;font-size:30px;box-shadow:0 0 20px #00ffcc}
+.btn{background:#00ffcc;border:none;padding:15px 30px;font-size:22px;border-radius:12px;font-weight:bold;color:black;margin:5px}
+#startBtn{background:#ffcc00;font-size:24px;padding:20px 40px}
+</style>
+</head>
+<body>
+<h1>SHERY PIANO FIRE 🔥🎹</h1>
+<p>By Shery + Meta AI 😎</p>
+<div class="box">
+<p style="font-size:19px;font-weight:bold">Score: <span id="score">0</span> | Combo: <span id="combo">0</span> 🔥 | Best: <span id="best">0</span></p>
+<div id="arena"><div class="lane"></div><div class="lane"></div><div class="lane"></div><div class="lane"></div></div>
+<p id="msg" style="font-size:18px;color:#00ffcc;font-weight:bold">KAHIN BHI TAP KARO - GAME START HO JAYEGA!</p>
+<button class="btn" id="startBtn">▶️ START MUSIC!</button><br>
+<button class="btn" onclick="location.reload()" style="display:none;background:#ff3333;color:white" id="restartBtn">DOBARA KHELO 🔥</button>
+<p style="font-size:13px">Sound ON karo! 🎧 Tile miss hua to game over!</p>
+</div>
+<script>
+let arena=document.getElementById('arena'), lanes=document.querySelectorAll('.lane');
+let score=0, combo=0, over=false, started=false, speed=3.2;
+let best=localStorage.getItem('sheryPianoBest')||0; document.getElementById('best').innerText=best;
+let audioCtx=null;
+let notes=[523.25,587.33,659.25,783.99,880.00,1046.5,1174.66,1318.51];
+let noteIdx=0;
+function playNote(){
+  try{
+    if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state==='suspended') audioCtx.resume();
+    let o=audioCtx.createOscillator(), g=audioCtx.createGain();
+    o.type='triangle'; o.frequency.value=notes[noteIdx%notes.length]; noteIdx++;
+    g.gain.setValueAtTime(0.3,audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.01,audioCtx.currentTime+0.5);
+    o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+0.5);
+  }catch(e){}
+}
+function playMiss(){
+  try{
+    if(!audioCtx) return;
+    let o=audioCtx.createOscillator(), g=audioCtx.createGain();
+    o.type='sawtooth'; o.frequency.value=120;
+    g.gain.setValueAtTime(0.3,audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.01,audioCtx.currentTime+0.4);
+    o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+0.4);
+  }catch(e){}
+}
+function startGame(){
+  if(started) return; started=true; over=false;
+  document.getElementById('startBtn').style.display='none';
+  document.getElementById('msg').innerText='CHALO! Tile ko tap karo! 🎹';
+  try{ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); if(audioCtx.state==='suspended') audioCtx.resume(); }catch(e){}
+  // Pehli tile foran
+  spawnTile();
+  setInterval(spawnTile, 650);
+}
+// START button + poori screen pe tap se start
+document.getElementById('startBtn').addEventListener('click', startGame);
+document.getElementById('startBtn').addEventListener('touchstart', function(e){ e.preventDefault(); startGame(); }, {passive:false});
+document.body.addEventListener('touchstart', function(){ if(!started) startGame(); }, {passive:true});
+document.body.addEventListener('click', function(){ if(!started) startGame(); });
+
+function spawnTile(){
+  if(over || !started) return;
+  let laneIdx=Math.floor(Math.random()*4);
+  let t=document.createElement('div'); t.className='tile'; t.innerText='🎵';
+  t.style.top='-120px'; lanes[laneIdx].appendChild(t);
+  let y=-120;
+  let iv=setInterval(()=>{
+    if(over){ clearInterval(iv); return; }
+    y+=speed; t.style.top=y+'px';
+    if(y>430){ clearInterval(iv); t.remove(); gameOver(); }
+  },20);
+  function hitTile(e){ e.preventDefault(); e.stopPropagation(); if(over) return; clearInterval(iv); t.remove(); playNote(); score+=10+combo; combo++; if(combo%10==0 && speed<7) speed+=0.4; document.getElementById('score').innerText=score; document.getElementById('combo').innerText=combo; if(combo>2) document.getElementById('msg').innerText='COMBO x'+combo+' 🔥🔥 KEEP GOING!'; }
+  t.addEventListener('touchstart', hitTile, {passive:false});
+  t.addEventListener('click', hitTile);
+}
+function gameOver(){
+  if(over) return; over=true; playMiss();
+  if(score>best){ best=score; localStorage.setItem('sheryPianoBest',best); document.getElementById('best').innerText=best; }
+  document.getElementById('msg').innerText='GAME OVER! Score: '+score+' 🎹';
+  document.getElementById('restartBtn').style.display='inline-block';
+}
+</script>
+</body>
+</html>
