@@ -2,59 +2,62 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SHERY OS</title>
+<title>SHERY OS PRO</title>
 <style>
-body{background:#1a1a2e;color:white;text-align:center;font-family:sans-serif;margin:0;padding:20px}
-h1{color:#ffcc00}
-.box{background:white;color:black;padding:20px;border-radius:20px;margin:15px}
-button{background:#ffcc00;border:none;padding:15px 30px;font-size:20px;border-radius:10px;font-weight:bold}
-#gameCanvas{background:#87CEEB;border-radius:15px;width:100%;max-width:400px}
+body{background:#0a0a0a;color:white;text-align:center;font-family:Arial;margin:0;padding:15px}
+h1{color:#00ffcc;font-size:35px;text-shadow:0 0 15px #00ffcc}
+.box{background:#1a1a1a;border:2px solid #00ffcc;padding:20px;border-radius:20px;margin:15px}
+button{background:#00ffcc;border:none;padding:15px 35px;font-size:20px;border-radius:10px;font-weight:bold;color:black}
+canvas{background:linear-gradient(#000,#1a0033);border-radius:15px;width:100%;max-width:420px;border:2px solid #00ffcc}
 </style>
 </head>
 <body>
-<h1>SHERY OS 🔥</h1>
-<p>Maine or Meta AI ne mil ke banayi hai 😎</p>
+<h1>SHERY OS ⚡ PRO</h1>
+<p>By Shery + Meta AI 😎</p>
 
 <div class="box">
-<h2>Game 1: Click Game</h2>
+<h2>🔥 CLICK GAME</h2>
 <h2>Score: <span id="score">0</span></h2>
 <button onclick="add()">CLICK ME!</button>
 </div>
 
 <div class="box">
-<h2>Game 2: SHERY RUNNER 🏃</h2>
-<p>Tap kar ke JUMP karo! Patthar se bacho!</p>
-<canvas id="gameCanvas" width="400" height="150"></canvas><br><br>
+<h2>🏃 SHERY RUNNER - PRO MODE</h2>
+<p>Tap = JUMP | Aag se bacho, jitna door utna PRO!</p>
+<canvas id="gameCanvas" width="420" height="180"></canvas><br><br>
 <button onclick="jump()">JUMP! ⬆️</button>
-<p>Score: <span id="runScore">0</span></p>
-<p id="over"></p>
+<p>Score: <span id="runScore">0</span> | Best: <span id="best">0</span></p>
+<p id="over" style="color:#ff3333;font-weight:bold"></p>
 </div>
 
 <script>
 let s=0;
 function add(){s++;document.getElementById('score').innerText=s;}
-
 let c=document.getElementById('gameCanvas');
 let x=c.getContext('2d');
-let y=110, vy=0, jumping=false, rockX=400, score2=0, gameOver=false;
-function jump(){ if(!jumping && !gameOver){vy=-12; jumping=true;} if(gameOver){resetGame();} }
-function resetGame(){y=110;rockX=400;score2=0;gameOver=false;document.getElementById('over').innerText='';}
+let y=130, vy=0, jumping=false, obsX=420, score2=0, gameOver=false, speed=5;
+let best=localStorage.getItem('sheryBest')||0;
+document.getElementById('best').innerText=best;
+function jump(){ if(!jumping && !gameOver){vy=-14; jumping=true;} if(gameOver){resetGame();} }
+function resetGame(){y=130;obsX=420;score2=0;speed=5;gameOver=false;document.getElementById('over').innerText='';}
 function draw(){
-  x.clearRect(0,0,400,150);
-  x.fillStyle='#87CEEB'; x.fillRect(0,0,400,150);
-  x.fillStyle='green'; x.fillRect(0,130,400,20);
-  // Insaan
-  x.font='30px Arial'; x.fillText('🏃', 50, y+25);
-  // Patthar
-  x.font='25px Arial'; x.fillText('🪨', rockX, 125);
+  x.clearRect(0,0,420,180);
+  x.fillStyle='#111'; x.fillRect(0,0,420,180);
+  x.fillStyle='#00ffcc'; x.fillRect(0,155,420,3);
+  // PRO Runner - Ninja style
+  x.font='38px Arial'; x.fillText('🥷', 50, y+35);
+  // Aag wala obstacle
+  x.font='32px Arial'; x.fillText('🔥', obsX, 150);
   if(!gameOver){
-    vy+=0.7; y+=vy;
-    if(y>=110){y=110; vy=0; jumping=false;}
-    rockX-=4; score2++;
-    if(rockX<0){rockX=400;}
-    if(rockX>40 && rockX<75 && y>85){
+    vy+=0.8; y+=vy;
+    if(y>=130){y=130; vy=0; jumping=false;}
+    obsX-=speed; score2++;
+    if(score2%500==0) speed+=0.5;
+    if(obsX<0){obsX=420+Math.random()*150;}
+    if(obsX>45 && obsX<85 && y>100){
       gameOver=true;
-      document.getElementById('over').innerText='GAME OVER! Dobara khelne ke liye JUMP dabao 😅';
+      if(Math.floor(score2/10)>best){best=Math.floor(score2/10);localStorage.setItem('sheryBest',best);document.getElementById('best').innerText=best;}
+      document.getElementById('over').innerText='GAME OVER! PRO banne ke liye JUMP dabao dobara 🔥';
     }
   }
   document.getElementById('runScore').innerText=Math.floor(score2/10);
@@ -64,4 +67,4 @@ c.addEventListener('click', jump);
 draw();
 </script>
 </body>
-  </html>
+</html>
