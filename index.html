@@ -1,31 +1,76 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SHERY SHOOTER FINAL</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>SHERY PIANO FIRE</title>
 <style>
-body{background:#0a0a0a;color:white;text-align:center;font-family:Arial;margin:0;padding:10px}
-h1{color:#ff3333;font-size:30px}
-.box{background:#1a1a1a;border:2px solid #ff3333;padding:12px;border-radius:20px}
-#arena{position:relative;width:100%;max-width:420px;height:380px;background:#111;border:2px solid #ff3333;border-radius:15px;margin:auto;overflow:hidden}
-#player{position:absolute;width:50px;height:50px;background:#00ffcc;bottom:10px;left:180px;border-radius:10px;text-align:center;line-height:50px;font-size:28px;color:black;font-weight:bold}
-.enemy{position:absolute;width:40px;height:40px;background:#ff3333;border-radius:50%;text-align:center;line-height:40px;font-size:22px}
-.bullet{position:absolute;width:8px;height:20px;background:yellow;border-radius:5px}
-.btn{background:#ff3333;border:none;padding:14px 18px;font-size:20px;border-radius:12px;font-weight:bold;color:white;margin:5px}
-.btn2{background:#00ffcc;color:black}
+body{background:#000;color:white;text-align:center;font-family:Arial;margin:0;padding:10px;overflow:hidden}
+h1{color:#00ffcc;font-size:30px;text-shadow:0 0 15px #00ffcc;margin:5px}
+.box{background:#111;border:2px solid #00ffcc;padding:10px;border-radius:20px;max-width:420px;margin:auto}
+#arena{position:relative;width:100%;height:440px;background:linear-gradient(#000,#1a0033);border:2px solid #00ffcc;border-radius:15px;overflow:hidden;display:flex}
+.lane{flex:1;border-right:1px solid #333;position:relative}
+.tile{position:absolute;left:2px;right:2px;height:110px;background:linear-gradient(#00ffcc,#0088ff);border-radius:10px;text-align:center;line-height:110px;font-size:30px;box-shadow:0 0 20px #00ffcc}
+.tile.missed{background:#333}
+.btn{background:#00ffcc;border:none;padding:15px 30px;font-size:22px;border-radius:12px;font-weight:bold;color:black;margin:5px}
+#startBtn{background:#ffcc00;font-size:24px}
 </style>
 </head>
 <body>
-<h1>SHERY SHOOTER 🔫</h1>
+<h1>SHERY PIANO FIRE 🔥🎹</h1>
 <p>By Shery + Meta AI 😎</p>
 <div class="box">
-<p style="font-size:19px;font-weight:bold">Score: <span id="score">0</span> | Best: <span id="best">0</span> | HP: <span id="hp">3</span></p>
-<div id="arena"><div id="player">S</div></div><br>
-<button class="btn" onclick="move(-40)">⬅️</button>
-<button class="btn btn2" onclick="shoot()">SHOOT!</button>
-<button class="btn" onclick="move(40)">➡️</button>
-<p id="over" style="color:#ff3333;font-weight:bold"></p>
-<button class="btn btn2" onclick="location.reload()" style="display:none" id="restartBtn">DOBARA KHELO 🔥</button>
-<p>Neeche jane do, bas touch hone se bacho!</p>
+<p style="font-size:19px;font-weight:bold">Score: <span id="score">0</span> | Combo: <span id="combo">0</span> 🔥 | Best: <span id="best">0</span></p>
+<div id="arena"><div class="lane"></div><div class="lane"></div><div class="lane"></div><div class="lane"></div></div>
+<p id="msg" style="font-size:18px;color:#00ffcc;font-weight:bold">START dabao, phir tile ko tap karo!</p>
+<button class="btn" id="startBtn" onclick="startGame()">▶️ START MUSIC!</button><br>
+<button class="btn" onclick="location.reload()" style="display:none;background:#ff3333;color:white" id="restartBtn">DOBARA KHELO 🔥</button>
+<p style="font-size:13px">Sound ON karo! 🎧 Tile miss hua to game over!</p>
 </div>
-<script
+<script>
+let arena=document.getElementById('arena'), lanes=document.querySelectorAll('.lane');
+let score=0, combo=0, over=false, started=false, speed=3.2, spawnTimer=null;
+let best=localStorage.getItem('sheryPianoBest')||0; document.getElementById('best').innerText=best;
+let audioCtx=null;
+let notes=[523.25,587.33,659.25,783.99,880.00,1046.5,1174.66,1318.51]; // C D E G A C D E
+let noteIdx=0;
+function playNote(){
+  if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  let o=audioCtx.createOscillator(), g=audioCtx.createGain();
+  o.type='triangle'; o.frequency.value=notes[noteIdx%notes.length]; noteIdx++;
+  g.gain.setValueAtTime(0.3,audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.01,audioCtx.currentTime+0.5);
+  o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+0.5);
+  // extra beat
+  let o2=audioCtx.createOscillator(), g2=audioCtx.createGain();
+  o2.type='sine'; o2.frequency.value=notes[(noteIdx+2)%notes.length]/2;
+  g2.gain.setValueAtTime(0.15,audioCtx.currentTime); g2.gain.exponentialRampToValueAtTime(0.01,audioCtx.currentTime+0.4);
+  o2.connect(g2); g2.connect(audioCtx.destination); o2.start(); o2.stop(audioCtx.currentTime+0.4);
+}
+function playMiss(){
+  if(!audioCtx) return;
+  let o=audioCtx.createOscillator(), g=audioCtx.createGain();
+  o.type='sawtooth'; o.frequency.value=120;
+  g.gain.setValueAtTime(0.3,audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.01,audioCtx.currentTime+0.4);
+  o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+0.4);
+}
+function startGame(){
+  if(started) return; started=true; over=false;
+  document.getElementById('startBtn').style.display='none';
+  document.getElementById('msg').innerText='CHALO! Tile ko tap karo! 🎹';
+  if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  spawnTimer=setInterval(spawnTile, 650);
+}
+function spawnTile(){
+  if(over) return;
+  let laneIdx=Math.floor(Math.random()*4);
+  let t=document.createElement('div'); t.className='tile'; t.innerText='🎵';
+  t.style.top='-120px'; lanes[laneIdx].appendChild(t);
+  let y=-120;
+  let iv=setInterval(()=>{
+    if(over){ clearInterval(iv); return; }
+    y+=speed; t.style.top=y+'px';
+    if(y>430){ clearInterval(iv); t.remove(); gameOver(); }
+  },20);
+  t.addEventListener('touchstart', hitTile, {passive:true});
+  t.addEventListener('click', hitTile);
+  function hitTile(e){ e.preventDefault(); e.stopPropagation(); if(over) return; clearInterval(iv); t.remove(); playNote(); score+=10+combo; combo++; if(combo%10==0 &&
