@@ -1,30 +1,29 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>SHERY SHOOTER</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SHERY SHOOTER FIXED</title>
 <style>
 body{background:#0a0a0a;color:white;text-align:center;font-family:Arial;margin:0;padding:10px}
-h1{color:#ff3333;font-size:32px;text-shadow:0 0 15px #ff3333;margin:10px}
+h1{color:#ff3333;font-size:32px;text-shadow:0 0 15px #ff3333}
 .box{background:#1a1a1a;border:2px solid #ff3333;padding:15px;border-radius:20px;margin:10px}
-canvas{background:linear-gradient(#000,#1a0000);border-radius:15px;width:100%;max-width:420px;border:2px solid #ff3333;touch-action:none}
+canvas{background:#111;border-radius:15px;width:100%;max-width:420px;border:2px solid #ff3333}
 .btn{background:#ff3333;border:none;padding:15px 20px;font-size:22px;border-radius:12px;font-weight:bold;color:white;margin:5px}
 .btn2{background:#00ffcc;color:black}
-.score{font-size:20px;font-weight:bold}
 </style>
 </head>
 <body>
 <h1>SHERY SHOOTER 🔫</h1>
 <p>By Shery + Meta AI 😎</p>
 <div class="box">
-<p class="score">Score: <span id="score">0</span> | Best: <span id="best">0</span> | ❤️ <span id="hp">3</span></p>
+<p style="font-size:20px;font-weight:bold">Score: <span id="score">0</span> | Best: <span id="best">0</span> | HP: <span id="hp">3</span></p>
 <canvas id="game" width="420" height="380"></canvas><br>
-<button class="btn" onclick="move(-35)">⬅️</button>
-<button class="btn btn2" onclick="shoot()">🔫 SHOOT!</button>
-<button class="btn" onclick="move(35)">➡️</button>
+<button class="btn" onclick="move(-40)">⬅️</button>
+<button class="btn btn2" onclick="shoot()">SHOOT!</button>
+<button class="btn" onclick="move(40)">➡️</button>
 <p id="over" style="color:#ff3333;font-weight:bold;font-size:20px"></p>
 <button class="btn btn2" onclick="restart()" style="display:none" id="restartBtn">DOBARA KHELO 🔥</button>
-<p style="font-size:14px">Dushman 👾 ko goli maro, goli khayi to HP kam hoga!</p>
+<p>Laal dushman ko peeli goli maro!</p>
 </div>
 <script>
 let c=document.getElementById('game'), x=c.getContext('2d');
@@ -32,30 +31,31 @@ let px=190, bullets=[], enemies=[], score=0, hp=3, over=false;
 let best=localStorage.getItem('sheryShootBest')||0;
 document.getElementById('best').innerText=best;
 function move(d){ px+=d; if(px<10)px=10; if(px>370)px=370; }
-function shoot(){ if(!over) bullets.push({x:px+20,y:320}); }
+function shoot(){ if(!over) bullets.push({x:px+20,y:315}); }
 function restart(){ px=190;bullets=[];enemies=[];score=0;hp=3;over=false;document.getElementById('over').innerText='';document.getElementById('restartBtn').style.display='none';document.getElementById('hp').innerText=hp;document.getElementById('score').innerText=score; }
-function spawn(){ if(!over && Math.random()<0.03) enemies.push({x:Math.random()*380,y:-20,s:1+Math.random()*1.5}); }
+// Har 800ms me naya dushman
+setInterval(()=>{ if(!over){ enemies.push({x:Math.random()*380,y:-20,s:1+Math.random()*1.5}); } },800);
 function draw(){
   x.clearRect(0,0,420,380);
   x.fillStyle='#111'; x.fillRect(0,0,420,380);
-  // Player - Shery
-  x.font='40px Arial'; x.fillText('😎',px,360);
-  x.font='20px Arial'; x.fillText('🔫',px+5,330);
-  // Bullets
+  // Player - GREEN SHIP (emoji nahi, shape hai)
+  x.fillStyle='#00ffcc'; x.fillRect(px,320,40,40);
+  x.fillStyle='white'; x.fillRect(px+15,320,10,15);
+  x.fillStyle='yellow'; x.font='bold 14px Arial'; x.fillText('SHERY',px-2,385);
+  // Bullets - PEELI
   x.fillStyle='#ffff00';
-  bullets.forEach((b,i)=>{ b.y-=10; x.fillRect(b.x,b.y,5,15); if(b.y<0) bullets.splice(i,1); });
-  // Enemies
-  spawn();
-  enemies.forEach((e,ei)=>{
-    e.y+=e.s*2;
-    x.font='32px Arial'; x.fillText('👾',e.x,e.y);
-    // Bullet hit?
-    bullets.forEach((b,bi)=>{ if(Math.abs(b.x-e.x)<25 && Math.abs(b.y-e.y)<25){ enemies.splice(ei,1); bullets.splice(bi,1); score+=10; document.getElementById('score').innerText=score; } });
-    // Enemy reached bottom?
-    if(e.y>360){ enemies.splice(ei,1); hp--; document.getElementById('hp').innerText=hp; if(hp<=0){ over=true; if(score>best){best=score;localStorage.setItem('sheryShootBest',best);document.getElementById('best').innerText=best;} document.getElementById('over').innerText='GAME OVER! Tu ne '+score+' dushman uraye! 🔥'; document.getElementById('restartBtn').style.display='inline-block'; } }
-  });
+  for(let i=bullets.length-1;i>=0;i--){ let b=bullets[i]; b.y-=12; x.fillRect(b.x,b.y,6,16); if(b.y<0) bullets.splice(i,1); }
+  // Enemies - LAAL
+  for(let ei=enemies.length-1;ei>=0;ei--){ let e=enemies[ei]; e.y+=e.s*2;
+    x.fillStyle='#ff3333'; x.fillRect(e.x,e.y,35,35);
+    x.fillStyle='white'; x.fillRect(e.x+7,e.y+10,7,7); x.fillRect(e.x+21,e.y+10,7,7);
+    x.fillStyle='black'; x.fillRect(e.x+10,e.y+25,15,5);
+    for(let bi=bullets.length-1;bi>=0;bi--){ let b=bullets[bi]; if(b.x>e.x-5 && b.x<e.x+40 && b.y>e.y-10 && b.y<e.y+40){ enemies.splice(ei,1); bullets.splice(bi,1); score+=10; document.getElementById('score').innerText=score; break; } }
+    if(e.y>360){ enemies.splice(ei,1); hp--; document.getElementById('hp').innerText=hp; if(hp<=0){ over=true; if(score>best){best=score;localStorage.setItem('sheryShootBest',best);document.getElementById('best').innerText=best;} document.getElementById('over').innerText='GAME OVER! Score: '+score; document.getElementById('restartBtn').style.display='inline-block'; } }
+  }
   requestAnimationFrame(draw);
 }
-c.addEventListener('click', (e)=>{ let r=c.getBoundingClientRect(); let tx=(e.clientX-r.left)*(420/r.width); if(tx<px) move(-30); else move(30); shoot(); });
 draw();
-setInterval(()=>{ if(!over && Math.random()<0.5) shoot(); },300
+</script>
+</body>
+  </html>
