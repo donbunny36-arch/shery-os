@@ -1,27 +1,67 @@
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SHERY OS</title>
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SHERY OS</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#000;color:#00ff00;font-family:monospace;height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
-h1{font-size:50px;text-shadow:0 0 20px #00ff00}
-#time{font-size:22px;margin:15px}
-.box{border:3px solid #00ff00;border-radius:25px;padding:30px;width:90%;max-width:400px;box-shadow:0 0 30px #00ff00}
-#s{font-size:70px;color:#fff}
-button{width:100%;padding:35px;font-size:35px;font-weight:bold;background:#00ff00;border:none;border-radius:20px;margin-top:20px}
-button:active{transform:scale(0.95);background:#fff}
-#msg{margin-top:20px;font-size:18px}
+body{background:#1a1a2e;color:white;text-align:center;font-family:sans-serif;margin:0;padding:20px}
+h1{color:#ffcc00}
+.box{background:white;color:black;padding:20px;border-radius:20px;margin:15px}
+button{background:#ffcc00;border:none;padding:15px 30px;font-size:20px;border-radius:10px;font-weight:bold}
+#gameCanvas{background:#87CEEB;border-radius:15px;width:100%;max-width:400px}
 </style>
-</head><body>
-<h1>😎 SHERY OS</h1>
-<div id="time"></div>
+</head>
+<body>
+<h1>SHERY OS 🔥</h1>
+<p>Maine or Meta AI ne mil ke banayi hai 😎</p>
+
 <div class="box">
-<h2>🎮 CLICK GAME</h2>
-<div>Score: <span id="s">0</span></div>
-<button onclick="c()">👊 CLICK ME!</button>
-<p id="msg">> Ready Boss...</p>
+<h2>Game 1: Click Game</h2>
+<h2>Score: <span id="score">0</span></h2>
+<button onclick="add()">CLICK ME!</button>
 </div>
+
+<div class="box">
+<h2>Game 2: SHERY RUNNER 🏃</h2>
+<p>Tap kar ke JUMP karo! Patthar se bacho!</p>
+<canvas id="gameCanvas" width="400" height="150"></canvas><br><br>
+<button onclick="jump()">JUMP! ⬆️</button>
+<p>Score: <span id="runScore">0</span></p>
+<p id="over"></p>
+</div>
+
 <script>
-let n=0;
-function c(){n++;document.getElementById('s').innerHTML=n;document.getElementById('msg').innerHTML='> Wah Boss! '+n+' Click!'}
-setInterval(()=>{document.getElementById('time').innerHTML=new Date().toLocaleString()},1000)
+let s=0;
+function add(){s++;document.getElementById('score').innerText=s;}
+
+let c=document.getElementById('gameCanvas');
+let x=c.getContext('2d');
+let y=110, vy=0, jumping=false, rockX=400, score2=0, gameOver=false;
+function jump(){ if(!jumping && !gameOver){vy=-12; jumping=true;} if(gameOver){resetGame();} }
+function resetGame(){y=110;rockX=400;score2=0;gameOver=false;document.getElementById('over').innerText='';}
+function draw(){
+  x.clearRect(0,0,400,150);
+  x.fillStyle='#87CEEB'; x.fillRect(0,0,400,150);
+  x.fillStyle='green'; x.fillRect(0,130,400,20);
+  // Insaan
+  x.font='30px Arial'; x.fillText('🏃', 50, y+25);
+  // Patthar
+  x.font='25px Arial'; x.fillText('🪨', rockX, 125);
+  if(!gameOver){
+    vy+=0.7; y+=vy;
+    if(y>=110){y=110; vy=0; jumping=false;}
+    rockX-=4; score2++;
+    if(rockX<0){rockX=400;}
+    if(rockX>40 && rockX<75 && y>85){
+      gameOver=true;
+      document.getElementById('over').innerText='GAME OVER! Dobara khelne ke liye JUMP dabao 😅';
+    }
+  }
+  document.getElementById('runScore').innerText=Math.floor(score2/10);
+  requestAnimationFrame(draw);
+}
+c.addEventListener('click', jump);
+draw();
 </script>
-</body></html>
+</body>
+  </html>
